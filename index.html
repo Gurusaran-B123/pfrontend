@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Health Hub</title>
+    <!-- Modern Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Premium Style Sheet -->
+    <link rel="stylesheet" href="style.css">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+    <!-- Ambient glowing visual decorations -->
+    <div class="glow-bg-1"></div>
+    <div class="glow-bg-2"></div>
+
+    <!-- MAIN APP WRAPPER -->
+    <div class="app-wrapper">
+
+        <!-- ==========================================
+           1. UNAUTHENTICATED: LOGIN & SIGN UP GATEWAY
+           ========================================== -->
+        <div id="auth-container" class="login-container">
+            <div class="auth-flex-row">
+                
+                <!-- MAIN AUTHENTICATION CARD -->
+                <div class="login-card" id="login-card">
+                    <div class="login-header">
+                        <div class="login-icon-box">
+                            <i data-lucide="shield-check" style="width: 2rem; height: 2rem;"></i>
+                        </div>
+                        <h1 class="login-title">Project Health Hub</h1>
+                        <p class="login-subtitle">Secure Gateway & Authentication Register</p>
+                    </div>
+
+                    <!-- Sign In / Sign Up tabs selector -->
+                    <div class="auth-tabs-bar">
+                        <button id="tab-btn-signin" class="auth-tab-btn active">
+                            <i data-lucide="key-round" style="width: 0.9rem; height: 0.9rem;"></i>
+                            <span>Sign In</span>
+                        </button>
+                        <button id="tab-btn-signup" class="auth-tab-btn">
+                            <i data-lucide="user-plus" style="width: 0.9rem; height: 0.9rem;"></i>
+                            <span>Sign Up</span>
+                        </button>
+                    </div>
+
+                    <!-- Error Banner -->
+                    <div id="auth-error-banner" class="auth-error-banner hidden">
+                        <i data-lucide="alert-circle" style="width: 1rem; height: 1rem; flex-shrink: 0; margin-top: 1px;"></i>
+                        <span id="auth-error-msg"></span>
+                    </div>
+
+                    <!-- SIGN IN FORM -->
+                    <form id="signin-form" class="modal-form">
+                        <!-- Role Selection (hidden when OTP is active) -->
+                        <div id="role-selection-wrapper">
+                            <label class="form-label">Select System Role</label>
+                            <div class="role-grid">
+                                <label id="role-option-admin" class="role-option selected-admin">
+                                    <input type="radio" name="loginRole" value="Admin" checked style="display: none;">
+                                    <i data-lucide="crown" class="role-icon" style="width: 1.35rem; height: 1.35rem; margin-bottom: 0.4rem;"></i>
+                                    <span class="role-option-title">Admin Controller</span>
+                                </label>
+                                <label id="role-option-pm" class="role-option">
+                                    <input type="radio" name="loginRole" value="Project Manager" style="display: none;">
+                                    <i data-lucide="user" class="role-icon" style="width: 1.35rem; height: 1.35rem; margin-bottom: 0.4rem;"></i>
+                                    <span class="role-option-title">Project Manager</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Email Input Area (hidden when OTP is active) -->
+                        <div id="email-input-wrapper">
+                            <label class="form-label">Registered Email Address</label>
+                            <div class="input-container">
+                                <span class="input-icon-left">
+                                    <i data-lucide="mail" style="width: 0.9rem; height: 0.9rem;"></i>
+                                </span>
+                                <input type="email" id="login-email-input" class="input-field input-field-with-icon" placeholder="your.name@projecthealth.com" required>
+                            </div>
+
+                            <!-- Quick select pre-seeds -->
+                            <div class="quick-select-panel">
+                                <span class="quick-select-title" id="quick-select-title">💡 QUICK SELECT REGISTERED ADMINS</span>
+                                <div class="quick-select-buttons" id="quick-select-container">
+                                    <!-- Dynamic Quick select buttons -->
+                                </div>
+                            </div>
+
+                            <button type="submit" id="btn-send-passcode" class="btn-primary">
+                                <span>Send 6-Digit Passcode</span>
+                                <i data-lucide="arrow-right" style="width: 0.9rem; height: 0.9rem;"></i>
+                            </button>
+                        </div>
+
+                        <!-- OTP Passcode Entering Area (hidden by default, shown when passcode is sent) -->
+                        <div id="otp-input-wrapper" class="hidden">
+                            <div class="otp-verification-header">
+                                <div class="otp-verification-icon">
+                                    <i data-lucide="mail" style="width: 1.5rem; height: 1.5rem;"></i>
+                                </div>
+                                <h3 class="otp-verification-title">Verify Your Email</h3>
+                                <p class="otp-verification-desc">
+                                    A secure single-use passcode has been intercepted by the SMTP Sandbox for:<br>
+                                    <strong id="otp-target-email" style="color: darkcyan;"></strong>
+                                </p>
+                            </div>
+
+                            <div class="input-container" style="margin-bottom: 1.25rem;">
+                                <label class="form-label" style="text-align: center; display: block; margin-bottom: 0.5rem;">
+                                    Enter 6-Digit Passcode
+                                </label>
+                                <input type="text" id="otp-code-input" maxlength="6" placeholder="000000" class="otp-monospace-input">
+                            </div>
+
+                            <div class="otp-controls-row">
+                                <button type="button" id="btn-edit-email" class="btn-link-edit-email">
+                                    <i data-lucide="arrow-left" style="width: 0.75rem; height: 0.75rem;"></i>
+                                    <span>Edit Email</span>
+                                </button>
+                                <span id="otp-timer-text" class="otp-timer-label hidden">
+                                    <i data-lucide="refresh-cw" class="animate-spin" style="width: 0.75rem; height: 0.75rem;"></i>
+                                    <span>Resend in <span id="otp-countdown">30</span>s</span>
+                                </span>
+                                <button type="button" id="btn-resend-otp" class="btn-link-resend-otp">
+                                    Resend Passcode
+                                </button>
+                            </div>
+
+                            <button type="button" id="btn-verify-otp" class="btn-primary">
+                                <i data-lucide="shield-check" style="width: 1rem; height: 1rem;"></i>
+                                <span>Verify & Sign In</span>
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- SIGN UP FORM -->
+                    <form id="signup-form" class="modal-form hidden">
+                        <div>
+                            <label class="form-label">System Role to Register</label>
+                            <div class="role-grid">
+                                <label id="signup-role-admin" class="role-option selected-admin">
+                                    <input type="radio" name="signUpRole" value="Admin" checked style="display: none;">
+                                    <i data-lucide="crown" class="role-icon" style="width: 1.35rem; height: 1.35rem; margin-bottom: 0.4rem;"></i>
+                                    <span class="role-option-title">Admin Controller</span>
+                                </label>
+                                <label id="signup-role-pm" class="role-option">
+                                    <input type="radio" name="signUpRole" value="Project Manager" style="display: none;">
+                                    <i data-lucide="user" class="role-icon" style="width: 1.35rem; height: 1.35rem; margin-bottom: 0.4rem;"></i>
+                                    <span class="role-option-title">Project Manager</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="signup-fields-stack">
+                            <div>
+                                <label class="form-label">Full Name</label>
+                                <input type="text" id="signup-name-input" class="input-field" placeholder="e.g. Eleanor Vance" required>
+                            </div>
+                            <div>
+                                <label class="form-label">Email Address</label>
+                                <input type="email" id="signup-email-input" class="input-field" placeholder="e.g. eleanor.vance@projecthealth.com" required>
+                            </div>
+                            <div id="signup-dept-wrapper" class="hidden">
+                                <label class="form-label">Department</label>
+                                <select id="signup-dept-select" class="select-field">
+                                    <option value="Engineering">Engineering</option>
+                                    <option value="Product Strategy">Product Strategy</option>
+                                    <option value="Infrastructure">Infrastructure</option>
+                                    <option value="User Experience">User Experience</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn-primary" style="margin-top: 1.25rem; background: darkcyan; box-shadow: 0 4px 12px rgba(0, 139, 139, 0.2);">
+                            <i data-lucide="user-plus" style="width: 0.9rem; height: 0.9rem;"></i>
+                            <span>Register Account</span>
+                        </button>
+
+                        <p class="signup-notice">
+                            Note: Project Managers registered via Sign Up will immediately appear in the assignable employee pool.
+                        </p>
+                    </form>
+                </div>
+
+                <!-- SMTP SECURE INTERCEPTOR CARD (SIDE PANEL) -->
+                <div id="smtp-interceptor-card" class="smtp-interceptor-card hidden">
+                    <div class="smtp-header">
+                        <div class="smtp-header-title">
+                            <div class="smtp-icon-box">
+                                <i data-lucide="mail" style="width: 1.1rem; height: 1.1rem;"></i>
+                            </div>
+                            <span class="smtp-title-text">SMTP SECURE INTERCEPTOR</span>
+                        </div>
+                        <div class="smtp-status-badge">
+                            <span class="status-dot"></span>
+                            <span class="status-text">INTERCEPTED</span>
+                        </div>
+                    </div>
+
+                    <!-- Intercepted Headers -->
+                    <div class="smtp-headers-block">
+                        <div><span class="header-lbl">To:</span> <span id="smtp-to-email" class="header-val"></span> <span id="smtp-to-name" class="header-name-val"></span></div>
+                        <div><span class="header-lbl">From:</span> <span class="header-val-from">auth-security-daemon@projecthealth.com</span></div>
+                        <div><span class="header-lbl">Subject:</span> <span class="header-subject">🔑 LOGIN SECURE CODE: <span id="smtp-subject-code"></span></span></div>
+                    </div>
+
+                    <!-- Email Body -->
+                    <div class="smtp-body">
+                        <p>Hello <strong id="smtp-body-name" style="color: #f1f5f9;"></strong>,</p>
+                        <p style="margin-top: 0.5rem;">You requested a single-use authentication passcode to sign into your <strong id="smtp-body-role" style="color: darkcyan;"></strong> workspace.</p>
+                        <p style="margin-top: 0.5rem;">Please enter this authorization token immediately into the system sign-in form:</p>
+
+                        <!-- Passcode Big Box -->
+                        <div class="smtp-passcode-display-box">
+                            <div id="smtp-code-display" class="smtp-code-text">000000</div>
+                            <span class="smtp-passcode-badge">OTP SECURITY TOKEN</span>
+                        </div>
+
+                        <!-- Copy Code Button -->
+                        <button type="button" id="copy-otp-btn" class="smtp-copy-btn">
+                            <span>Copy Security Code</span>
+                            <i data-lucide="copy" style="width: 0.85rem; height: 0.85rem;"></i>
+                        </button>
+                    </div>
+
+                    <!-- Sandbox notice -->
+                    <div class="smtp-footer-notice">
+                        <i data-lucide="info" style="width: 0.9rem; height: 0.9rem; flex-shrink: 0; color: #38bdf8;"></i>
+                        <span>This intercepts secure OTP email delivery locally inside the sandboxed container for rapid local developer review. No actual public SMTP queries are triggered.</span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ==========================================
+           2. AUTHENTICATED: WORKSPACE LAYOUT
+           ========================================== -->
+        <div id="workspace-container" class="workspace-layout hidden">
+            
+            <!-- TOP HEADER AREA -->
+            <header class="workspace-header">
+                <div class="header-logo" id="logo-dashboard-trigger" style="cursor: pointer;">
+                    <div class="logo-badge">
+                        <i data-lucide="activity" style="width: 1.25rem; height: 1.25rem;"></i>
+                    </div>
+                    <div>
+                        <span class="logo-title">Project Health Hub</span>
+                        <span class="logo-tag">Status Tracking & Discussion Log</span>
+                    </div>
+                </div>
+
+                <!-- Top navigation layout tabs -->
+                <div class="tabs-navigation">
+                    <button id="nav-btn-dashboard" class="tab-nav-btn active">
+                        <i data-lucide="sliders" style="width: 0.9rem; height: 0.9rem;"></i>
+                        <span>Dashboard</span>
+                    </button>
+                    <button id="nav-btn-projects" class="tab-nav-btn">
+                        <i data-lucide="folder" style="width: 0.9rem; height: 0.9rem;"></i>
+                        <span>Projects Master</span>
+                    </button>
+                    <button id="nav-btn-discussions" class="tab-nav-btn">
+                        <i data-lucide="message-square" style="width: 0.9rem; height: 0.9rem;"></i>
+                        <span>Discussion Log</span>
+                    </button>
+                    <button id="nav-btn-employees" class="tab-nav-btn admin-only hidden">
+                        <i data-lucide="users" style="width: 0.9rem; height: 0.9rem;"></i>
+                        <span>Employee Master</span>
+                    </button>
+                </div>
+
+                <!-- Profile and logout controls -->
+                <div class="header-actions-group">
+                    <div class="user-panel-header">
+                        <div id="user-header-avatar" class="avatar-badge">
+                            AD
+                        </div>
+                        <div class="user-meta-header">
+                            <span id="user-header-name" class="user-meta-name">Administrator</span>
+                            <span id="user-header-role" class="user-meta-role">Admin</span>
+                        </div>
+                    </div>
+                    <button id="btn-logout-header" class="action-btn-circle delete" title="Log Out" style="width: 2.25rem; height: 2.25rem;">
+                        <i data-lucide="log-out" style="width: 0.95rem; height: 0.95rem;"></i>
+                    </button>
+                </div>
+            </header>
+
+            <!-- MAIN WORKSPACE PORT -->
+            <main class="main-work-area" id="main-work-area">
+                
+                <!-- ==========================================
+                   A. EXECUTIVE DASHBOARD SECTION
+                   ========================================== -->
+                <section id="section-dashboard" class="work-area-section animate-fadeInUp">
+                    <!-- Greeting Header -->
+                    <div class="section-greeting-header">
+                        <div>
+                            <h1 class="greeting-title">Welcome, <span id="dash-greeting-name">User</span>!</h1>
+                            <p class="greeting-subtitle">
+                                Workspace Role: <strong id="dash-greeting-role" style="color: var(--clr-indigo);">Admin</strong>. Here is the operational summary of your active projects.
+                            </p>
+                        </div>
+                        <div class="greeting-actions admin-only hidden">
+                            <button id="dash-btn-create-proj" class="btn-action-indigo">
+                                <i data-lucide="plus" style="width: 0.85rem; height: 0.85rem;"></i>
+                                <span>Create Project</span>
+                            </button>
+                            <button id="dash-btn-log-disc" class="btn-action-emerald">
+                                <i data-lucide="message-square-plus" style="width: 0.85rem; height: 0.85rem;"></i>
+                                <span>Log Discussion</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Stats Indicators Grid -->
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div>
+                                <span class="stat-card-title">Live Systems</span>
+                                <span id="dash-stat-live" class="stat-card-value stat-card-value-indigo">0</span>
+                            </div>
+                            <div class="stat-icon-wrapper wrapper-emerald">
+                                <i data-lucide="check-circle" style="width: 1.5rem; height: 1.5rem;"></i>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div>
+                                <span class="stat-card-title">Work In Progress</span>
+                                <span id="dash-stat-wip" class="stat-card-value" style="color: var(--clr-amber);">0</span>
+                            </div>
+                            <div class="stat-icon-wrapper wrapper-amber">
+                                <i data-lucide="activity" style="width: 1.5rem; height: 1.5rem;"></i>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div>
+                                <span class="stat-card-title">Yet To Start</span>
+                                <span id="dash-stat-pending" class="stat-card-value" style="color: var(--clr-indigo);">0</span>
+                            </div>
+                            <div class="stat-icon-wrapper wrapper-indigo">
+                                <i data-lucide="circle-dashed" style="width: 1.5rem; height: 1.5rem;"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Split Layout: Distribution & Recent Timeline -->
+                    <div class="dashboard-split-grid">
+                        
+                        <!-- Health Distribution Progress Bars -->
+                        <div class="table-panel" style="padding: 1.5rem; display: flex; flex-direction: column; gap: 1.25rem; height: 100%;">
+                            <h3 class="table-panel-title" style="border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem; margin-bottom: 0.5rem;">
+                                Project Health & Status Distribution
+                            </h3>
+                            
+                            <!-- Live deployments -->
+                            <div class="progress-bar-block">
+                                <div class="progress-labels">
+                                    <span style="color: var(--clr-emerald); font-weight: 600;">🟢 Live Deployments</span>
+                                    <span id="progress-lbl-live" class="progress-stats-mono">0% (0/0)</span>
+                                </div>
+                                <div class="progress-track">
+                                    <div id="progress-fill-live" class="progress-fill fill-emerald" style="width: 0%;"></div>
+                                </div>
+                            </div>
+
+                            <!-- WIP deployments -->
+                            <div class="progress-bar-block">
+                                <div class="progress-labels">
+                                    <span style="color: var(--clr-amber); font-weight: 600;">⚡ Work in Progress</span>
+                                    <span id="progress-lbl-wip" class="progress-stats-mono">0% (0/0)</span>
+                                </div>
+                                <div class="progress-track">
+                                    <div id="progress-fill-wip" class="progress-fill fill-amber" style="width: 0%;"></div>
+                                </div>
+                            </div>
+
+                            <!-- Pending deployments -->
+                            <div class="progress-bar-block">
+                                <div class="progress-labels">
+                                    <span style="color: var(--clr-indigo); font-weight: 600;">⏳ Yet to Start</span>
+                                    <span id="progress-lbl-pending" class="progress-stats-mono">0% (0/0)</span>
+                                </div>
+                                <div class="progress-track">
+                                    <div id="progress-fill-pending" class="progress-fill fill-indigo" style="width: 0%;"></div>
+                                </div>
+                            </div>
+
+                            <!-- General Info Box -->
+                            <div class="dashboard-info-box">
+                                <i data-lucide="info" style="width: 1.2rem; height: 1.2rem; color: var(--clr-indigo); flex-shrink: 0; margin-top: 2px;"></i>
+                                <p style="font-size: 0.7rem; color: var(--text-secondary); line-height: 1.4; margin: 0;">
+                                    Keep project statuses accurate to generate precise health reports. All managers should log periodic discussions under their respective profiles to ensure alignment.
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Recent Discussion Log Timeline -->
+                        <div class="table-panel" style="padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; height: 100%;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem; margin-bottom: 0.25rem;">
+                                <h3 class="table-panel-title">Recent Discussion Timeline</h3>
+                                <span id="dash-view-all-logs" class="dash-timeline-link">View All Log →</span>
+                            </div>
+
+                            <div id="dash-timeline-stack" class="dash-timeline-stack">
+                                <!-- Dynamic recent discussion updates -->
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Admin Database Maintenance Operations Panel -->
+                    <div id="admin-maintenance-panel" class="table-panel admin-only hidden" style="padding: 1.5rem; background: rgba(99, 102, 241, 0.02); border: 1px dashed rgba(99, 102, 241, 0.2); display: flex; flex-direction: column; gap: 1rem; margin-top: 1rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem;">
+                            <div>
+                                <h3 class="table-panel-title" id="admin-maintenance-title" style="display: flex; align-items: center; gap: 0.5rem; text-transform: none;"></h3>
+                                    <i data-lucide="sliders" style="width: 1.1rem; height: 1.1rem; color: var(--clr-indigo);"></i>
+                                    <span>Workspace Maintenance & Production Handover Tools</span>
+                                </h3>
+                                <p style="font-size: 0.7rem; color: var(--text-secondary); margin-top: 0.25rem;">
+                                    Prepare database state registers before live customer delivery or clean hosting deployments.
+                                </p>
+                            </div>
+                            <span style="font-size: 0.6rem; background: rgba(99, 102, 241, 0.08); color: var(--clr-indigo); padding: 0.25rem 0.6rem; border-radius: 6px; font-weight: 700; font-family: var(--font-mono);">
+                                DEPLOYMENT READY
+                            </span>
+                        </div>
+
+                        <div class="maintenance-buttons-row">
+                            <button id="btn-format-db" class="btn-maintenance-format">
+                                <i data-lucide="trash-2" style="width: 0.85rem; height: 0.85rem;"></i>
+                                <span>Format Database (Wipe All Demo/Test Records)</span>
+                            </button>
+
+                            <button id="btn-restore-db" class="btn-maintenance-restore">
+                                <i data-lucide="refresh-cw" style="width: 0.85rem; height: 0.85rem;"></i>
+                                <span>Restore Sandbox Demo Dataset</span>
+                            </button>
+
+                            <div class="maintenance-notice-lbl">
+                                <i data-lucide="info" style="width: 0.9rem; height: 0.9rem; color: var(--clr-indigo); flex-shrink: 0;"></i>
+                                <span>Wiping the registry creates a completely clean workspace ready for manual inputs.</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ==========================================
+                   B. PROJECTS MASTER REGISTER SECTION
+                   ========================================== -->
+                <section id="section-projects" class="work-area-section hidden animate-fadeInUp">
+                    <div class="section-greeting-header">
+                        <div>
+                            <h2 class="greeting-title" style="font-size: 1.5rem;">Projects Master Register</h2>
+                            <p class="greeting-subtitle">
+                                Register project briefs, map status channels, and delegate ownership details.
+                            </p>
+                        </div>
+                        <div class="greeting-actions">
+                            <!-- PM Only: Project assignment toggle -->
+                            <label id="pm-proj-filter-wrap" class="checklist-label pm-only hidden" style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); padding: 0.5rem 0.75rem; border-radius: 10px; height: 36px; display: flex; align-items: center; gap: 0.4rem; margin: 0;">
+                                <input type="checkbox" id="pm-only-projects-chk">
+                                <span style="font-size: 0.75rem; font-weight: 600;">Show assigned projects only</span>
+                            </label>
+
+                            <button id="projects-btn-register" class="btn-action-indigo admin-only hidden">
+                                <i data-lucide="folder-plus" style="width: 0.9rem; height: 0.9rem;"></i>
+                                <span>Register Project</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Directory list panel -->
+                    <div class="table-panel">
+                        <div class="table-panel-header">
+                            <h3 class="table-panel-title">Active Directory (<span id="projects-count-lbl">0</span>)</h3>
+                            <div class="search-field-wrapper">
+                                <span class="search-field-icon">
+                                    <i data-lucide="search" style="width: 0.85rem; height: 0.85rem;"></i>
+                                </span>
+                                <input type="text" id="projects-search-input" placeholder="Search project name or manager..." class="search-input">
+                            </div>
+                        </div>
+
+                        <div class="table-scroller">
+                            <table class="custom-table">
+                                <thead>
+                                    <tr>
+                                        <th>Project Profile</th>
+                                        <th>Status</th>
+                                        <th>Timeline Start</th>
+                                        <th>Project Manager (Employee Master)</th>
+                                        <th style="text-align: right;">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="projects-table-body">
+                                    <!-- Dynamic rows loaded from ph_projects state -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ==========================================
+                   C. PROJECT DISCUSSIONS LOG SECTION
+                   ========================================== -->
+                <section id="section-discussions" class="work-area-section hidden animate-fadeInUp">
+                    <div class="section-greeting-header">
+                        <div>
+                            <h2 class="greeting-title" style="font-size: 1.5rem;">Project Discussion Registry</h2>
+                            <p class="greeting-subtitle">
+                                Add, view, and organize specific discussion points, dates, and action items.
+                            </p>
+                        </div>
+                        <button id="discussions-btn-log" class="btn-action-emerald admin-only hidden">
+                            <i data-lucide="message-square-plus" style="width: 0.9rem; height: 0.9rem;"></i>
+                            <span>Log Discussion Point</span>
+                        </button>
+                    </div>
+
+                    <!-- Filters Panel -->
+                    <div class="discussions-filters-panel">
+                        <div class="filters-group">
+                            <div class="filter-box">
+                                <label class="form-label" style="margin-bottom: 2px;">Filter Project</label>
+                                <select id="filter-disc-project-select" class="filter-dropdown-select">
+                                    <option value="all">All Project Masters</option>
+                                    <!-- Dynamic Options from state -->
+                                </select>
+                            </div>
+
+                            <div class="filter-box">
+                                <label class="form-label" style="margin-bottom: 2px;">Remarks Category</label>
+                                <select id="filter-disc-remark-select" class="filter-dropdown-select">
+                                    <option value="all">All Remarks</option>
+                                    <option value="Approved">Approved</option>
+                                    <option value="Not Approved">Not Approved</option>
+                                    <option value="Information">Information</option>
+                                    <option value="For Action">For Action</option>
+                                    <option value="Hold">Hold</option>
+                                    <option value="Not Relevant now">Not Relevant now</option>
+                                </select>
+                            </div>
+
+                            <div id="pm-disc-filter-wrap" class="filter-box pm-only hidden" style="justify-content: center; height: 54px; padding-top: 15px;">
+                                <label class="checklist-label" style="display: flex; align-items: center; gap: 0.4rem; margin: 0;">
+                                    <input type="checkbox" id="pm-only-discussions-chk">
+                                    <span style="font-size: 0.75rem; font-weight: 600;">My Assigned Projects Only</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <span class="records-counter-text">
+                            Displaying <span id="filtered-discussions-count">0</span> of <span id="total-discussions-count">0</span> logs
+                        </span>
+                    </div>
+
+                    <!-- Discussions Feed Stack -->
+                    <div class="discussions-stack" id="discussions-feed-stack">
+                        <!-- Dynamic discussion cards -->
+                    </div>
+                </section>
+
+                <!-- ==========================================
+                   D. EMPLOYEE MASTER DIRECTORY SECTION
+                   ========================================== -->
+                <section id="section-employees" class="work-area-section hidden animate-fadeInUp">
+                    <div class="section-greeting-header">
+                        <div>
+                            <h2 class="greeting-title" style="font-size: 1.5rem;">Employee Master Register</h2>
+                            <p class="greeting-subtitle">
+                                Administered catalog of available project managers dynamically fueling project delegation.
+                            </p>
+                        </div>
+                        <button id="employees-btn-register" class="btn-action-indigo">
+                            <i data-lucide="plus-circle" style="width: 0.9rem; height: 0.9rem;"></i>
+                            <span>Register Employee</span>
+                        </button>
+                    </div>
+
+                    <!-- Employees List Table Panel -->
+                    <div class="table-panel">
+                        <div class="table-panel-header">
+                            <h3 class="table-panel-title">Active Roster List (<span id="employees-count-lbl">0</span>)</h3>
+                            <div class="search-field-wrapper">
+                                <span class="search-field-icon">
+                                    <i data-lucide="search" style="width: 0.85rem; height: 0.85rem;"></i>
+                                </span>
+                                <input type="text" id="employees-search-input" placeholder="Search roster details..." class="search-input">
+                            </div>
+                        </div>
+
+                        <div class="table-scroller">
+                            <table class="custom-table">
+                                <thead>
+                                    <tr>
+                                        <th>ID Code</th>
+                                        <th>Employee Name</th>
+                                        <th>Email Address</th>
+                                        <th>Department Scope</th>
+                                        <th>Managed Projects</th>
+                                        <th style="text-align: right;">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="employees-table-body">
+                                    <!-- Dynamic rows loaded from ph_employees -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+            </main>
+        </div>
+
+    </div>
+
+    <!-- ==========================================
+       3. MODALS POPUPS SYSTEM
+       ========================================== -->
+
+    <!-- A. PROJECT REGISTER/EDIT MODAL (Admin only) -->
+    <div id="modal-project" class="modal-overlay hidden">
+        <div class="modal-container">
+            <button id="modal-project-close" class="modal-close-btn">
+                <i data-lucide="x" style="width: 0.9rem; height: 0.9rem;"></i>
+            </button>
+            
+            <h3 class="modal-title" id="modal-project-title">
+                <i data-lucide="folder-plus" style="width: 1.25rem; height: 1.25rem; color: var(--clr-indigo);"></i>
+                <span>Register New Project</span>
+            </h3>
+            
+            <form id="project-form" class="modal-form">
+                <input type="hidden" id="form-project-id">
+                
+                <div>
+                    <label class="form-label">Project Name</label>
+                    <input type="text" id="form-project-name" required class="input-field" placeholder="e.g. Phoenix Launch Upgrade">
+                </div>
+                
+                <div class="form-row-2">
+                    <div>
+                        <label class="form-label">Project Status</label>
+                        <select id="form-project-status" class="select-field">
+                            <option value="Live">Live</option>
+                            <option value="Workinprogress">Workinprogress</option>
+                            <option value="Yet to start">Yet to start</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="form-label">Start Date</label>
+                        <input type="date" id="form-project-startdate" required class="input-field">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="form-label">Project Manager (Loads from Employee Master)</label>
+                    <select id="form-project-manager" class="select-field">
+                        <!-- Loaded dynamically from employees list -->
+                    </select>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" id="form-project-cancel" class="btn-modal-cancel">Cancel</button>
+                    <button type="submit" id="form-project-submit" class="btn-modal-submit-blue">Register Project</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- B. DISCUSSION LOG/EDIT MODAL -->
+    <div id="modal-discussion" class="modal-overlay hidden">
+        <div class="modal-container">
+            <button id="modal-discussion-close" class="modal-close-btn">
+                <i data-lucide="x" style="width: 0.9rem; height: 0.9rem;"></i>
+            </button>
+            
+            <h3 class="modal-title" id="modal-discussion-title">
+                <i data-lucide="message-square-plus" style="width: 1.25rem; height: 1.25rem; color: var(--clr-emerald);"></i>
+                <span>Log Discussion Pointer</span>
+            </h3>
+            
+            <form id="discussion-form" class="modal-form">
+                <input type="hidden" id="form-discussion-id">
+                
+                <div>
+                    <label class="form-label">Select Project Scope (Loaded from Project Master)</label>
+                    <select id="form-discussion-project" class="select-field" required>
+                        <!-- Loaded dynamically from projects list -->
+                    </select>
+                </div>
+
+                <div>
+                    <label class="form-label">Discussion Points / Text</label>
+                    <textarea id="form-discussion-points" required rows="5" class="textarea-field" placeholder="Record summary details, remarks, issues, or action logs discussed..." style="resize: vertical;"></textarea>
+                </div>
+
+                <div class="form-row-2">
+                    <div>
+                        <label class="form-label">Date of Discussion</label>
+                        <input type="date" id="form-discussion-date" required class="input-field">
+                    </div>
+                    <div>
+                        <label class="form-label">Remarks Status</label>
+                        <select id="form-discussion-remarks" class="select-field">
+                            <option value="Approved">Approved</option>
+                            <option value="Not Approved">Not Approved</option>
+                            <option value="Information">Information</option>
+                            <option value="For Action">For Action</option>
+                            <option value="Hold">Hold</option>
+                            <option value="Not Relevant now">Not Relevant now</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" id="form-discussion-cancel" class="btn-modal-cancel">Cancel</button>
+                    <button type="submit" id="form-discussion-submit" class="btn-modal-submit-emerald">Submit Note</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- C. EMPLOYEE MASTER MODAL (Admin only) -->
+    <div id="modal-employee" class="modal-overlay hidden">
+        <div class="modal-container">
+            <button id="modal-employee-close" class="modal-close-btn">
+                <i data-lucide="x" style="width: 0.9rem; height: 0.9rem;"></i>
+            </button>
+            
+            <h3 class="modal-title" id="modal-employee-title">
+                <i data-lucide="user-check" style="width: 1.25rem; height: 1.25rem; color: var(--clr-indigo);"></i>
+                <span>Register Employee Profile</span>
+            </h3>
+            
+            <form id="employee-form" class="modal-form">
+                <input type="hidden" id="form-employee-id">
+                
+                <div>
+                    <label class="form-label">Full Name</label>
+                    <input type="text" id="form-employee-name" required class="input-field" placeholder="e.g. Clara Oswald">
+                </div>
+
+                <div>
+                    <label class="form-label">Email Address</label>
+                    <input type="email" id="form-employee-email" required class="input-field" placeholder="e.g. clara.oswald@projecthealth.com">
+                </div>
+
+                <div>
+                    <label class="form-label">Department Scope</label>
+                    <select id="form-employee-dept" class="select-field">
+                        <option value="Engineering">Engineering</option>
+                        <option value="Product Strategy">Product Strategy</option>
+                        <option value="Infrastructure">Infrastructure</option>
+                        <option value="User Experience">User Experience</option>
+                        <option value="Operations">Operations</option>
+                    </select>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" id="form-employee-cancel" class="btn-modal-cancel">Cancel</button>
+                    <button type="submit" id="form-employee-submit" class="btn-modal-submit-blue">Register Profile</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- D. DETAILED PROJECT PREVIEW MODAL -->
+    <div id="modal-project-detail" class="modal-overlay hidden">
+        <div class="modal-container" style="max-width: 580px;">
+            <button id="modal-project-detail-close" class="modal-close-btn">
+                <i data-lucide="x" style="width: 0.9rem; height: 0.9rem;"></i>
+            </button>
+            
+            <h3 class="modal-title" style="border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem; margin-bottom: 0.5rem;">
+                <i data-lucide="folder" style="width: 1.25rem; height: 1.25rem; color: var(--clr-indigo);"></i>
+                <span>Project Detailed Brief</span>
+            </h3>
+
+            <div class="project-detail-grid">
+                <div>
+                    <span class="form-label-detail">Project Name</span>
+                    <span id="detail-proj-name" style="font-size: 0.9rem; font-weight: 700; color: darkcyan;">Phoenix</span>
+                </div>
+                <div>
+                    <span class="form-label-detail">Unique ID</span>
+                    <span id="detail-proj-id" style="font-family: var(--font-mono); font-weight: 600; color: var(--clr-indigo);">PRJ-001</span>
+                </div>
+                <div>
+                    <span class="form-label-detail">Project Manager</span>
+                    <span id="detail-proj-manager" style="font-weight: 600;">Clara Oswald</span>
+                </div>
+                <div>
+                    <span class="form-label-detail">Start Date</span>
+                    <span id="detail-proj-startdate" style="font-family: var(--font-mono); color: var(--text-secondary);">2026-01-15</span>
+                </div>
+                <div style="grid-column: span 2;">
+                    <span class="form-label-detail">Status Level</span>
+                    <div id="detail-proj-status-badge">
+                        <!-- Dynamic Status Pill -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scoped Discussions nested under details -->
+            <div class="scoped-discussions-block">
+                <div class="scoped-discussions-header">
+                    <h4 class="scoped-discussions-title">Scoped Discussion Pointers</h4>
+                    <button type="button" id="detail-btn-add-point" class="inline-action-link">+ Add Point</button>
+                </div>
+
+                <div class="scoped-discussions-scroller" id="detail-discussions-list">
+                    <!-- Dynamic nested discussion entries -->
+                </div>
+            </div>
+
+            <div class="modal-footer" style="border-top: 1px solid var(--border-color); padding-top: 1rem; margin-top: 0.5rem;">
+                <button type="button" id="modal-project-detail-cancel" class="btn-modal-cancel">Close Panel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- E. CUSTOM CONFIRMATION DIALOG MODAL -->
+    <div id="modal-confirm" class="modal-overlay hidden" style="z-index: 99990;">
+        <div class="modal-container" style="max-width: 420px; padding: 1.75rem; background: var(--bg-dark-base); color: var(--text-primary);">
+            <h3 class="modal-title" style="color: var(--clr-rose); display: flex; align-items: center; gap: 0.5rem; font-size: 1.1rem; font-weight: 700;">
+                <i data-lucide="alert-circle" style="width: 1.35rem; height: 1.35rem; color: var(--clr-rose);"></i>
+                <span id="confirm-title-lbl">Delete Confirmation</span>
+            </h3>
+            
+            <p id="confirm-message-lbl" style="font-size: 0.8rem; color: var(--text-secondary); line-height: 1.5; margin: 1rem 0 1.5rem 0;">
+                Are you sure you want to proceed with this destructive action?
+            </p>
+
+            <div class="modal-footer" style="border-top: 1px solid var(--border-color); padding-top: 1rem; margin-top: 0.5rem; display: flex; justify-content: flex-end; gap: 0.75rem;">
+                <button type="button" id="btn-confirm-cancel" class="btn-modal-cancel" style="padding: 0.5rem 1rem; font-size: 0.75rem; background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-secondary); cursor: pointer;">
+                    No, Cancel
+                </button>
+                <button type="button" id="btn-confirm-proceed" style="padding: 0.5rem 1rem; font-size: 0.75rem; background: var(--clr-rose); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                    Confirm Action
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- F. CUSTOM SYSTEM TOAST ALERT OVERLAY -->
+    <div id="toast-overlay" class="toast-overlay hidden">
+        <i id="toast-icon-success" data-lucide="check-circle-2" style="width: 1.1rem; height: 1.1rem; color: #34d399;" class="hidden"></i>
+        <i id="toast-icon-error" data-lucide="alert-circle" style="width: 1.1rem; height: 1.1rem; color: #fca5a5;" class="hidden"></i>
+        <span id="toast-message-lbl"></span>
+    </div>
+
+    <!-- Vanilla Javascript Code Logic -->
+    <script src="app.js"></script>
+</body>
+</html>
