@@ -2,40 +2,74 @@
 // PROJECT HEALTH HUB - CORE JS CONTROLLER
 // ==========================================
 
-// --- Seed Data & Cache State ---
-const INITIAL_EMPLOYEES = [
-    { id: "EMP-001", name: "Clara Oswald", email: "clara.oswald@projecthealth.com", dept: "Engineering" },
-    { id: "EMP-002", name: "Marcus Aurelius", email: "marcus.aurelius@projecthealth.com", dept: "Product Strategy" },
-    { id: "EMP-003", name: "Devon Rex", email: "devon.rex@projecthealth.com", dept: "Infrastructure" }
-];
-
-const INITIAL_PROJECTS = [
-    { id: "PRJ-001", name: "Apollo Phoenix Upgrade", status: "Live", startdate: "2026-01-15", manager: "Clara Oswald" },
-    { id: "PRJ-002", name: "Enterprise Security Shield", status: "Workinprogress", startdate: "2026-03-01", manager: "Marcus Aurelius" },
-    { id: "PRJ-003", name: "Global Logistics Sync", status: "Yet to start", startdate: "2026-08-10", manager: "Devon Rex" }
-];
-
-const INITIAL_DISCUSSIONS = [
-    { id: "DSC-001", project_id: "PRJ-001", project_name: "Apollo Phoenix Upgrade", points: "Completed phase 1 testing. API latency dropped by 34% after implementing caching cluster.", date: "2026-06-25", remarks: "Approved" },
-    { id: "DSC-002", project_id: "PRJ-002", project_name: "Enterprise Security Shield", points: "Identified dependency issues in the auth gateway. Deploying firewall hotfixes this afternoon.", date: "2026-07-02", remarks: "For Action" },
-    { id: "DSC-003", project_id: "PRJ-001", project_name: "Apollo Phoenix Upgrade", points: "Discussed adding multi-factor authentication requirements. Put on secondary roadmap.", date: "2026-06-29", remarks: "Hold" }
-];
+// --- Backend API Configuration ---
+// Point this at wherever app.py is running.
+const API_BASE = "http://localhost:3000/api";
 
 // --- State Engine ---
-let employees = JSON.parse(localStorage.getItem("ph_employees")) || INITIAL_EMPLOYEES;
-let projects = JSON.parse(localStorage.getItem("ph_projects")) || INITIAL_PROJECTS;
-let discussions = JSON.parse(localStorage.getItem("ph_discussions")) || INITIAL_DISCUSSIONS;
+// employees / projects / discussions are now sourced live from PostgreSQL
+// via the Flask API — no seed/mock data and no local caching of business data.
+let employees = [];
+let projects = [];
+let discussions = [];
 let session = JSON.parse(localStorage.getItem("ph_session")) || null;
 
 let activeTab = "dashboard";
 let currentOtpCode = "";
 let currentConfirmCallback = null;
 
-// Save helper
-function saveState() {
-    localStorage.setItem("ph_employees", JSON.stringify(employees));
-    localStorage.setItem("ph_projects", JSON.stringify(projects));
-    localStorage.setItem("ph_discussions", JSON.stringify(discussions));
+// --- API Helpers ---
+async function apiGet(path) {
+    const res = await fetch(`${API_BASE}${path}`);
+    if (!res.ok) throw new Error(`GET ${path} failed (${res.status})`);
+    return res.json();
+}
+
+async function apiPost(path, body) {
+    const res = await fetch(`${API_BASE}${path}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body)
+    });
+    if (!res.ok) throw new Error(`POST ${path} failed (${res.status})`);
+    return res.json();
+}
+
+async function apiPut(path, body) {
+    const res = await fetch(`${API_BASE}${path}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body)
+    });
+    if (!res.ok) throw new Error(`PUT ${path} failed (${res.status})`);
+    return res.json();
+}
+
+async function apiDelete(path) {
+    const res = await fetch(`${API_BASE}${path}`, { method: "DELETE" });
+    if (!res.ok) throw new Error(`DELETE ${path} failed (${res.status})`);
+    return res.json();
+}
+
+// Pull the latest employees/projects/discussions from the database
+async function loadAllData() {
+    try {
+        const [empData, projData, discData] = await Promise.all([
+            apiGet("/employees"),
+            apiGet("/projects"),
+            apiGet("/discussions")
+        ]);
+        employees = empData;
+        projects = projData;
+        discussions = discData;
+    } catch (err) {
+        console.error(err);
+        showToast("Could not reach the server. Please check your connection.", true);
+    }
+}
+
+// Only the auth session is kept client-side; all business data lives in PostgreSQL
+function saveSession() {
     if (session) {
         localStorage.setItem("ph_session", JSON.stringify(session));
     } else {
@@ -83,7 +117,7 @@ document.addEventListener("DOMContentLoaded", () => {
     initApp();
 });
 
-function initApp() {
+async function initApp() {
     // Auth selectors
     const tabSignInBtn = document.getElementById("tab-btn-signin");
     const tabSignUpBtn = document.getElementById("tab-btn-signup");
@@ -140,7 +174,7 @@ function initApp() {
     });
 
     // Submit Sign Up Form
-    signupForm.addEventListener("submit", (e) => {
+    signupForm.addEventListener("submit", async (e) => {
         e.preventDefault();
         const role = document.querySelector('input[name="signUpRole"]:checked').value;
         const name = document.getElementById("signup-name-input").value.trim();
@@ -152,22 +186,26 @@ function initApp() {
             return;
         }
 
-        // Add to employee roster if Project Manager
-        if (role === "Project Manager") {
-            const idCode = `EMP-${String(employees.length + 1).padStart(3, "0")}`;
-            employees.push({ id: idCode, name, email, dept });
-            saveState();
-        }
+        try {
+            // Add to employee roster if Project Manager
+            if (role === "Project Manager") {
+                const created = await apiPost("/employees", { name, email, dept });
+                employees.push(created);
+            }
 
-        showToast(`Account registered successfully as ${role}!`);
-        // Switch to login
-        signupForm.reset();
-        tabSignInBtn.click();
-        document.getElementById("login-email-input").value = email;
-        if (role === "Admin") {
-            roleAdminOption.click();
-        } else {
-            rolePmOption.click();
+            showToast(`Account registered successfully as ${role}!`);
+            // Switch to login
+            signupForm.reset();
+            tabSignInBtn.click();
+            document.getElementById("login-email-input").value = email;
+            if (role === "Admin") {
+                roleAdminOption.click();
+            } else {
+                rolePmOption.click();
+            }
+        } catch (err) {
+            console.error(err);
+            showToast("Registration failed. Please try again.", true);
         }
     });
 
@@ -222,45 +260,42 @@ function initApp() {
     });
 
     // Verify OTP & Sign In
-    document.getElementById("btn-verify-otp").addEventListener("click", () => {
+    document.getElementById("btn-verify-otp").addEventListener("click", async () => {
         const entered = document.getElementById("otp-code-input").value.trim();
-        if (entered === currentOtpCode || entered === "125890") { // backdoor master code for quick test
-            const email = document.getElementById("login-email-input").value.trim().toLowerCase();
-            const role = document.querySelector('input[name="loginRole"]:checked').value;
 
-            // Find name
-            let name = "Administrator";
-            if (role === "Project Manager") {
-                const found = employees.find(emp => emp.email.toLowerCase() === email);
-                if (found) name = found.name;
-                else {
-                    // Create dynamic employee if not present
-                    name = email.split("@")[0].replace(".", " ").replace(/\b\w/g, c => c.toUpperCase());
-                    const idCode = `EMP-${String(employees.length + 1).padStart(3, "0")}`;
-                    employees.push({ id: idCode, name, email, dept: "Engineering" });
-                    saveState();
-                }
-            }
+        if (entered !== currentOtpCode) {
+            showToast("Invalid passcode. Please check the SMTP secure interceptor panel.", true);
+            return;
+        }
 
-            session = { email, role, name };
-            saveState();
+        const email = document.getElementById("login-email-input").value.trim().toLowerCase();
+        const role = document.querySelector('input[name="loginRole"]:checked').value;
+
+        try {
+            const result = await apiPost("/login", { email, role });
+            session = result.user;
+            saveSession();
 
             document.getElementById("otp-code-input").value = "";
             document.getElementById("smtp-interceptor-card").classList.add("hidden");
             document.getElementById("auth-container").classList.add("hidden");
             document.getElementById("workspace-container").classList.remove("hidden");
 
-            showToast(`Sign in successful! Welcome to the workspace, ${name}.`);
-            setupWorkspace();
-        } else {
-            showToast("Invalid passcode. Please check the SMTP secure interceptor panel.", true);
+            showToast(`Sign in successful! Welcome to the workspace, ${session.name}.`);
+            await setupWorkspace();
+        } catch (err) {
+            console.error(err);
+            showToast("Sign in failed. Please try again.", true);
         }
     });
 
     // Logout triggers
     document.getElementById("btn-logout-header").addEventListener("click", () => {
         session = null;
-        localStorage.removeItem("ph_session");
+        saveSession();
+        employees = [];
+        projects = [];
+        discussions = [];
         document.getElementById("workspace-container").classList.add("hidden");
         document.getElementById("auth-container").classList.remove("hidden");
         document.getElementById("role-selection-wrapper").classList.remove("hidden");
@@ -307,21 +342,22 @@ function initApp() {
         switchTab("dashboard");
     });
 
-    // Setup initial quick selects on load
+    // Load the roster (needed for the Quick Select buttons) before login
+    await loadAllData();
     renderQuickSelects();
 
     // Check if session exists
     if (session) {
         document.getElementById("auth-container").classList.add("hidden");
         document.getElementById("workspace-container").classList.remove("hidden");
-        setupWorkspace();
+        await setupWorkspace();
     }
 }
 
 // Switch tabs helper
 function switchTab(tab) {
     activeTab = tab;
-    
+
     // Hide all sections
     document.getElementById("section-dashboard").classList.add("hidden");
     document.getElementById("section-projects").classList.add("hidden");
@@ -392,13 +428,16 @@ function renderQuickSelects() {
 // ==========================================
 // WORKSPACE GENERAL LOGIC
 // ==========================================
-function setupWorkspace() {
+async function setupWorkspace() {
     if (!session) return;
+
+    // Refresh data from PostgreSQL now that we're signed in
+    await loadAllData();
 
     // Set Name & Avatar
     document.getElementById("user-header-name").textContent = session.name;
     document.getElementById("user-header-role").textContent = session.role;
-    document.getElementById("user-header-avatar").textContent = session.name.split(" ").map(w => w[0]).join("").substring(0,2).toUpperCase();
+    document.getElementById("user-header-avatar").textContent = session.name.split(" ").map(w => w[0]).join("").substring(0, 2).toUpperCase();
 
     // Greeting values
     document.getElementById("dash-greeting-name").textContent = session.name;
@@ -458,7 +497,7 @@ function renderDashboard() {
     timelineStack.innerHTML = "";
 
     // Take top 4 sorted by date desc
-    const sortedDiscussions = [...discussions].sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0, 4);
+    const sortedDiscussions = [...discussions].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 4);
 
     if (sortedDiscussions.length === 0) {
         timelineStack.innerHTML = `<div class="text-center p-4 text-xs text-slate-500">No recent discussions logged yet.</div>`;
@@ -584,12 +623,17 @@ function renderProjects() {
                 showConfirm(
                     "Delete Project Register?",
                     "Warning: Deleting this project will also permanently erase all stakeholders discussions nested under it from the historical log.",
-                    () => {
-                        projects = projects.filter(p => p.id !== id);
-                        discussions = discussions.filter(d => d.project_id !== id);
-                        saveState();
-                        renderProjects();
-                        showToast("Project profile and its discussion timeline deleted.");
+                    async () => {
+                        try {
+                            await apiDelete(`/projects/${id}`);
+                            projects = projects.filter(p => p.id !== id);
+                            discussions = discussions.filter(d => d.project_id !== id);
+                            renderProjects();
+                            showToast("Project profile and its discussion timeline deleted.");
+                        } catch (err) {
+                            console.error(err);
+                            showToast("Could not delete project. Please try again.", true);
+                        }
                     }
                 );
             });
@@ -625,7 +669,7 @@ function renderDiscussions() {
     let filtered = discussions.filter(d => {
         const matchesProj = projectFilter === "all" || d.project_id === projectFilter;
         const matchesRemark = remarkFilter === "all" || d.remarks === remarkFilter;
-        
+
         let matchesPm = true;
         if (pmOnlyChecked) {
             const proj = projects.find(p => p.id === d.project_id);
@@ -636,7 +680,7 @@ function renderDiscussions() {
     });
 
     // Sort by date desc
-    filtered.sort((a,b) => new Date(b.date) - new Date(a.date));
+    filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
 
     filteredCountLbl.textContent = filtered.length;
 
@@ -689,11 +733,16 @@ function renderDiscussions() {
             showConfirm(
                 "Delete Discussion Pointer?",
                 "Are you sure you want to remove this logged stakeholder discussion from the ledger permanently?",
-                () => {
-                    discussions = discussions.filter(d => d.id !== id);
-                    saveState();
-                    renderDiscussions();
-                    showToast("Discussion log removed successfully.");
+                async () => {
+                    try {
+                        await apiDelete(`/discussions/${id}`);
+                        discussions = discussions.filter(d => d.id !== id);
+                        renderDiscussions();
+                        showToast("Discussion log removed successfully.");
+                    } catch (err) {
+                        console.error(err);
+                        showToast("Could not delete discussion. Please try again.", true);
+                    }
                 }
             );
         });
@@ -763,11 +812,16 @@ function renderEmployees() {
             showConfirm(
                 "Remove Employee Profile?",
                 `Are you sure you want to remove ${empName || 'this employee'} from the directory? Any active projects assigned to them will stay registered, but they won't appear in delegation listings.`,
-                () => {
-                    employees = employees.filter(emp => emp.id !== id);
-                    saveState();
-                    renderEmployees();
-                    showToast("Employee roster profile removed.");
+                async () => {
+                    try {
+                        await apiDelete(`/employees/${id}`);
+                        employees = employees.filter(emp => emp.id !== id);
+                        renderEmployees();
+                        showToast("Employee roster profile removed.");
+                    } catch (err) {
+                        console.error(err);
+                        showToast("Could not remove employee. Please try again.", true);
+                    }
                 }
             );
         });
@@ -855,7 +909,7 @@ function openProjectModal(id = null) {
     lucide.createIcons();
 }
 
-function submitProjectForm(e) {
+async function submitProjectForm(e) {
     e.preventDefault();
     const id = document.getElementById("form-project-id").value;
     const name = document.getElementById("form-project-name").value.trim();
@@ -868,32 +922,34 @@ function submitProjectForm(e) {
         return;
     }
 
-    if (id) {
-        // Edit update
-        const pIndex = projects.findIndex(item => item.id === id);
-        if (pIndex !== -1) {
-            // Check if name changed to update nested discussions references
-            const oldName = projects[pIndex].name;
-            projects[pIndex] = { id, name, status, startdate, manager };
-            if (oldName !== name) {
-                discussions.forEach(d => {
-                    if (d.project_id === id) d.project_name = name;
-                });
+    try {
+        if (id) {
+            // Edit update
+            await apiPut(`/projects/${id}`, { name, status, startdate, manager });
+            const pIndex = projects.findIndex(item => item.id === id);
+            if (pIndex !== -1) {
+                projects[pIndex] = { id, name, status, startdate, manager };
             }
+            // Keep nested discussions references in sync
+            discussions.forEach(d => {
+                if (d.project_id === id) d.project_name = name;
+            });
             showToast("Project Master Register updated successfully.");
+        } else {
+            // Insert new
+            const created = await apiPost("/projects", { name, status, startdate, manager });
+            projects.push(created);
+            showToast("New Project Master Registered successfully!");
         }
-    } else {
-        // Insert new
-        const newId = `PRJ-${String(projects.length + 1).padStart(3, "0")}`;
-        projects.push({ id: newId, name, status, startdate, manager });
-        showToast("New Project Master Registered successfully!");
-    }
 
-    saveState();
-    hideModal("modal-project");
-    
-    if (activeTab === "projects") renderProjects();
-    else switchTab("projects");
+        hideModal("modal-project");
+
+        if (activeTab === "projects") renderProjects();
+        else switchTab("projects");
+    } catch (err) {
+        console.error(err);
+        showToast("Could not save the project. Please try again.", true);
+    }
 }
 
 function openDiscussionModal(id = null, prefilledProjectId = null) {
@@ -907,7 +963,7 @@ function openDiscussionModal(id = null, prefilledProjectId = null) {
     // Load available projects
     const projSelect = document.getElementById("form-discussion-project");
     projSelect.innerHTML = `<option value="">-- Select Project Reference --</option>`;
-    
+
     // PMs can only add discussions under their assigned projects
     let assignableProjects = projects;
     if (session.role === "Project Manager") {
@@ -944,7 +1000,7 @@ function openDiscussionModal(id = null, prefilledProjectId = null) {
     lucide.createIcons();
 }
 
-function submitDiscussionForm(e) {
+async function submitDiscussionForm(e) {
     e.preventDefault();
     const id = document.getElementById("form-discussion-id").value;
     const project_id = document.getElementById("form-discussion-project").value;
@@ -960,28 +1016,33 @@ function submitDiscussionForm(e) {
     const matchedProject = projects.find(p => p.id === project_id);
     if (!matchedProject) return;
 
-    if (id) {
-        // Edit update
-        const dIndex = discussions.findIndex(item => item.id === id);
-        if (dIndex !== -1) {
-            discussions[dIndex] = { id, project_id, project_name: matchedProject.name, points, date, remarks };
+    try {
+        if (id) {
+            // Edit update
+            await apiPut(`/discussions/${id}`, { project_id, project_name: matchedProject.name, points, date, remarks });
+            const dIndex = discussions.findIndex(item => item.id === id);
+            if (dIndex !== -1) {
+                discussions[dIndex] = { id, project_id, project_name: matchedProject.name, points, date, remarks };
+            }
             showToast("Stakeholder Ledger notes updated.");
+        } else {
+            // New insert
+            const created = await apiPost("/discussions", { project_id, project_name: matchedProject.name, points, date, remarks });
+            discussions.push(created);
+            showToast("Stakeholder Discussion Point registered!");
         }
-    } else {
-        // New insert
-        const newId = `DSC-${String(discussions.length + 1).padStart(3, "0")}`;
-        discussions.push({ id: newId, project_id, project_name: matchedProject.name, points, date, remarks });
-        showToast("Stakeholder Discussion Point registered!");
+
+        hideModal("modal-discussion");
+
+        // Close background detail card as well if open
+        hideModal("modal-project-detail");
+
+        if (activeTab === "discussions") renderDiscussions();
+        else switchTab("discussions");
+    } catch (err) {
+        console.error(err);
+        showToast("Could not save the discussion. Please try again.", true);
     }
-
-    saveState();
-    hideModal("modal-discussion");
-
-    // Close background detail card as well if open
-    hideModal("modal-project-detail");
-
-    if (activeTab === "discussions") renderDiscussions();
-    else switchTab("discussions");
 }
 
 function openEmployeeModal(id = null) {
@@ -1013,7 +1074,7 @@ function openEmployeeModal(id = null) {
     lucide.createIcons();
 }
 
-function submitEmployeeForm(e) {
+async function submitEmployeeForm(e) {
     e.preventDefault();
     const id = document.getElementById("form-employee-id").value;
     const name = document.getElementById("form-employee-name").value.trim();
@@ -1025,32 +1086,37 @@ function submitEmployeeForm(e) {
         return;
     }
 
-    if (id) {
-        // Edit update
-        const empIndex = employees.findIndex(item => item.id === id);
-        if (empIndex !== -1) {
+    try {
+        if (id) {
+            // Edit update
+            const oldName = employees.find(item => item.id === id)?.name;
+            await apiPut(`/employees/${id}`, { name, email, dept });
+            const empIndex = employees.findIndex(item => item.id === id);
+            if (empIndex !== -1) {
+                employees[empIndex] = { id, name, email, dept };
+            }
             // Update reference in active projects if name changed
-            const oldName = employees[empIndex].name;
-            employees[empIndex] = { id, name, email, dept };
-            if (oldName !== name) {
+            if (oldName && oldName !== name) {
                 projects.forEach(p => {
                     if (p.manager.toLowerCase() === oldName.toLowerCase()) p.manager = name;
                 });
             }
             showToast("Roster information updated successfully.");
+        } else {
+            // Insert new
+            const created = await apiPost("/employees", { name, email, dept });
+            employees.push(created);
+            showToast("New Employee Roster Profile added.");
         }
-    } else {
-        // Insert new
-        const newId = `EMP-${String(employees.length + 1).padStart(3, "0")}`;
-        employees.push({ id: newId, name, email, dept });
-        showToast("New Employee Roster Profile added.");
+
+        hideModal("modal-employee");
+
+        if (activeTab === "employees") renderEmployees();
+        else switchTab("employees");
+    } catch (err) {
+        console.error(err);
+        showToast("Could not save the employee. Please try again.", true);
     }
-
-    saveState();
-    hideModal("modal-employee");
-
-    if (activeTab === "employees") renderEmployees();
-    else switchTab("employees");
 }
 
 // Open detail preview card
