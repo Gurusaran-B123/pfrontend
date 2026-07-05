@@ -4,7 +4,7 @@
 
 // --- Backend API Configuration ---
 // Point this at wherever app.py is running.
-const API_BASE = "https://pbackend-d19d.onrender.com";
+const API_BASE = "https://pbackend-d19d.onrender.com/api";
 
 // --- State Engine ---
 // employees / projects / discussions are now sourced live from PostgreSQL
