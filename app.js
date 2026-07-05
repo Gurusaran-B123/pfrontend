@@ -4,7 +4,7 @@
 
 // --- Backend API Configuration ---
 // Point this at wherever app.py is running.
-const API_BASE = "http://localhost:3000/api";
+const API_BASE = "https://pbackend-4fd4.onrender.com";
 
 // --- State Engine ---
 // employees / projects / discussions are now sourced live from PostgreSQL
