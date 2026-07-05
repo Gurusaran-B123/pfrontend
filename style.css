@@ -2225,3 +2225,221 @@ select {
 .animate-spin {
     animation: spin 1s linear infinite;
 }
+
+/* ==========================================
+   11. LIVE COMPONENT BINDINGS
+   These classes are generated directly by app.js
+   (discussion feed cards, dashboard timeline, badges)
+   but were missing from the stylesheet — added here
+   using the same design tokens as the rest of the file.
+   ========================================== */
+
+/* --- Discussion Log: feed cards --- */
+.discussion-feed-card {
+    background-color: var(--bg-dark-panel);
+    border: 1px solid var(--border-color);
+    border-left: 4px solid var(--clr-indigo);
+    border-radius: var(--border-radius-lg);
+    padding: 1.25rem 1.5rem;
+    box-shadow: var(--shadow-premium);
+    transition: var(--transition-smooth);
+}
+
+.discussion-feed-card:hover {
+    transform: translateY(-1px);
+    border-color: var(--border-color-hover);
+}
+
+.feed-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.feed-card-project-lbl {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: darkcyan;
+}
+
+.feed-card-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.feed-card-text {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    margin-top: 0.75rem;
+    margin-bottom: 0.75rem;
+    word-break: break-word;
+}
+
+.feed-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    border-top: 1px solid var(--border-color);
+    padding-top: 0.75rem;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.feed-card-date {
+    font-family: var(--font-mono);
+}
+
+/* --- Dashboard: recent discussion timeline mini-cards --- */
+.timeline-mini-card {
+    background-color: rgba(0, 0, 0, 0.01);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+    transition: var(--transition-smooth);
+}
+
+.timeline-mini-card:hover {
+    border-color: var(--border-color-hover);
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+.timeline-mini-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.timeline-mini-project {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: darkcyan;
+}
+
+.timeline-mini-date {
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+}
+
+.timeline-mini-points {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    line-height: 1.4;
+    margin-top: 0.3rem;
+    word-break: break-word;
+}
+
+/* --- Project status badges (Projects table + detail modal) --- */
+.badge-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    border-radius: 9999px;
+    padding: 0.25rem 0.65rem;
+    font-size: 0.65rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.badge-pending {
+    background-color: rgba(99, 102, 241, 0.08);
+    border: 1px solid rgba(99, 102, 241, 0.15);
+    color: var(--clr-indigo);
+}
+
+/* --- Remark badges (Discussion Log + Dashboard timeline) --- */
+.badge-remark {
+    border-radius: 6px;
+    padding: 0.2rem 0.55rem;
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    display: inline-block;
+    white-space: nowrap;
+}
+
+.badge-remark-approved {
+    background-color: rgba(16, 185, 129, 0.08);
+    border: 1px solid rgba(16, 185, 129, 0.15);
+    color: var(--clr-emerald);
+}
+
+.badge-remark-not-approved {
+    background-color: rgba(244, 63, 94, 0.08);
+    border: 1px solid rgba(244, 63, 94, 0.15);
+    color: var(--clr-rose);
+}
+
+.badge-remark-info {
+    background-color: rgba(56, 189, 248, 0.08);
+    border: 1px solid rgba(56, 189, 248, 0.15);
+    color: #0369a1;
+}
+
+.badge-remark-action {
+    background-color: rgba(245, 158, 11, 0.08);
+    border: 1px solid rgba(245, 158, 11, 0.15);
+    color: var(--clr-amber);
+    animation: pulse-soft 2s infinite;
+}
+
+.badge-remark-hold {
+    background-color: rgba(99, 102, 241, 0.08);
+    border: 1px solid rgba(99, 102, 241, 0.15);
+    color: var(--clr-indigo);
+}
+
+.badge-remark-not-relevant {
+    background-color: rgba(71, 85, 105, 0.08);
+    border: 1px solid rgba(71, 85, 105, 0.15);
+    color: var(--text-secondary);
+}
+
+/* --- Responsive behavior for the cards above --- */
+@media (max-width: 640px) {
+    .feed-card-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .feed-card-controls {
+        width: 100%;
+        justify-content: flex-start;
+    }
+
+    .feed-card-footer {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.35rem;
+    }
+
+    .timeline-mini-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.25rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .discussion-feed-card {
+        padding: 1rem;
+    }
+
+    .timeline-mini-card {
+        padding: 0.65rem 0.85rem;
+    }
+
+    .feed-card-project-lbl {
+        font-size: 0.8rem;
+    }
+}
