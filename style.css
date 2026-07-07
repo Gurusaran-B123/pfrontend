@@ -2443,3 +2443,50 @@ select {
         font-size: 0.8rem;
     }
 }
+
+/* ==========================================
+   12. ADD DEPARTMENT INLINE FORM
+   Employee Master header — lets an Admin add a new
+   department on the fly; options sync into both the
+   Employee "Department Scope" select and the PM Sign Up
+   "Department" select via app.js.
+   ========================================== */
+.add-department-inline {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.add-department-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.add-department-input {
+    width: 180px;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.75rem;
+}
+
+.add-department-btn {
+    padding: 0.5rem 0.85rem;
+    font-size: 0.7rem;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+    .add-department-inline {
+        width: 100%;
+    }
+
+    .add-department-row {
+        width: 100%;
+    }
+
+    .add-department-input {
+        width: 100%;
+        flex: 1;
+    }
+}
