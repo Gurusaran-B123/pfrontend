@@ -74,7 +74,7 @@ async function loadAllData() {
 
 // Make sure every department returned by the API exists as an <option> in
 // both the Employee "Department Scope" select and the Sign Up "Department"
-// select — without touching or duplicating the defaults already in the HTML.
+// select, while also populating the delete-department selector.
 function renderDepartmentOptions() {
     const selectIds = ["signup-dept-select", "form-employee-dept"];
 
@@ -82,20 +82,29 @@ function renderDepartmentOptions() {
         const select = document.getElementById(selectId);
         if (!select) return;
 
-        const existingValues = new Set(
-            Array.from(select.options).map(opt => opt.value.trim().toLowerCase())
-        );
+        // Clear existing options completely to avoid duplicates/stale values
+        select.innerHTML = "";
 
+        // Add dynamic departments from DB
         departments.forEach(dept => {
-            if (!existingValues.has(dept.name.trim().toLowerCase())) {
-                const option = document.createElement("option");
-                option.value = dept.name;
-                option.textContent = dept.name;
-                select.appendChild(option);
-                existingValues.add(dept.name.trim().toLowerCase());
-            }
+            const option = document.createElement("option");
+            option.value = dept.name;
+            option.textContent = dept.name;
+            select.appendChild(option);
         });
     });
+
+    // Also populate the delete-department-select with the database departments
+    const deleteSelect = document.getElementById("delete-department-select");
+    if (deleteSelect) {
+        deleteSelect.innerHTML = '<option value="">-- Remove --</option>';
+        departments.forEach(dept => {
+            const option = document.createElement("option");
+            option.value = dept.id; // use the database ID as value
+            option.textContent = dept.name;
+            deleteSelect.appendChild(option);
+        });
+    }
 }
 
 // Only the auth session is kept client-side; all business data lives in PostgreSQL
@@ -395,6 +404,37 @@ async function initApp() {
             console.error(err);
             showToast("Could not add department. Please try again.", true);
         }
+    });
+
+    // Admin: delete a department
+    document.getElementById("btn-delete-department").addEventListener("click", async () => {
+        const select = document.getElementById("delete-department-select");
+        const deptIdStr = select.value;
+
+        if (!deptIdStr) {
+            showToast("Please select a department to remove.", true);
+            return;
+        }
+
+        const deptId = parseInt(deptIdStr, 10);
+        const dept = departments.find(d => d.id === deptId);
+        if (!dept) return;
+
+        showConfirm(
+            "Delete Department",
+            `Are you sure you want to delete the department "${dept.name}"? This will remove it from all selection dropdowns.`,
+            async () => {
+                try {
+                    await apiDelete(`/departments/${deptId}`);
+                    departments = departments.filter(d => d.id !== deptId);
+                    renderDepartmentOptions();
+                    showToast(`Department "${dept.name}" removed successfully.`);
+                } catch (err) {
+                    console.error(err);
+                    showToast("Could not delete department. Please try again.", true);
+                }
+            }
+        );
     });
 
     // Load the roster (needed for the Quick Select buttons) before login
