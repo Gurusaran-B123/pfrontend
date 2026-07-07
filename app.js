@@ -12,6 +12,7 @@ const API_BASE = "https://pbackend-d19d.onrender.com/api";
 let employees = [];
 let projects = [];
 let discussions = [];
+let departments = [];
 let session = JSON.parse(localStorage.getItem("ph_session")) || null;
 
 let activeTab = "dashboard";
@@ -51,21 +52,50 @@ async function apiDelete(path) {
     return res.json();
 }
 
-// Pull the latest employees/projects/discussions from the database
+// Pull the latest employees/projects/discussions/departments from the database
 async function loadAllData() {
     try {
-        const [empData, projData, discData] = await Promise.all([
+        const [empData, projData, discData, deptData] = await Promise.all([
             apiGet("/employees"),
             apiGet("/projects"),
-            apiGet("/discussions")
+            apiGet("/discussions"),
+            apiGet("/departments")
         ]);
         employees = empData;
         projects = projData;
         discussions = discData;
+        departments = deptData;
+        renderDepartmentOptions();
     } catch (err) {
         console.error(err);
         showToast("Could not reach the server. Please check your connection.", true);
     }
+}
+
+// Make sure every department returned by the API exists as an <option> in
+// both the Employee "Department Scope" select and the Sign Up "Department"
+// select — without touching or duplicating the defaults already in the HTML.
+function renderDepartmentOptions() {
+    const selectIds = ["signup-dept-select", "form-employee-dept"];
+
+    selectIds.forEach(selectId => {
+        const select = document.getElementById(selectId);
+        if (!select) return;
+
+        const existingValues = new Set(
+            Array.from(select.options).map(opt => opt.value.trim().toLowerCase())
+        );
+
+        departments.forEach(dept => {
+            if (!existingValues.has(dept.name.trim().toLowerCase())) {
+                const option = document.createElement("option");
+                option.value = dept.name;
+                option.textContent = dept.name;
+                select.appendChild(option);
+                existingValues.add(dept.name.trim().toLowerCase());
+            }
+        });
+    });
 }
 
 // Only the auth session is kept client-side; all business data lives in PostgreSQL
@@ -340,6 +370,31 @@ async function initApp() {
     // Logo triggers Home
     document.getElementById("logo-dashboard-trigger").addEventListener("click", () => {
         switchTab("dashboard");
+    });
+
+    // Admin: add a new department — syncs into both the Employee Master
+    // "Department Scope" select and the PM Sign Up "Department" select
+    document.getElementById("btn-add-department").addEventListener("click", async () => {
+        const input = document.getElementById("new-department-input");
+        const name = input.value.trim();
+
+        if (!name) {
+            showToast("Please enter a department name.", true);
+            return;
+        }
+
+        try {
+            const created = await apiPost("/departments", { name });
+            if (!departments.some(d => d.name.toLowerCase() === created.name.toLowerCase())) {
+                departments.push(created);
+            }
+            renderDepartmentOptions();
+            input.value = "";
+            showToast(`Department "${created.name}" added.`);
+        } catch (err) {
+            console.error(err);
+            showToast("Could not add department. Please try again.", true);
+        }
     });
 
     // Load the roster (needed for the Quick Select buttons) before login
