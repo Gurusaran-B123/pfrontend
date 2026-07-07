@@ -544,14 +544,22 @@
                             </p>
                         </div>
 
-                        <!-- Add Department inline form -->
+                        <!-- Manage Departments inline form -->
                         <div class="add-department-inline">
-                            <label class="form-label" style="margin-bottom: 0.35rem;">Add Department</label>
-                            <div class="add-department-row">
-                                <input type="text" id="new-department-input" class="input-field add-department-input" placeholder="e.g. Marketing">
-                                <button type="button" id="btn-add-department" class="btn-action-indigo add-department-btn">
+                            <label class="form-label" style="margin-bottom: 0.35rem;">Manage Departments</label>
+                            <div class="add-department-row" style="display: flex; gap: 0.4rem; align-items: center; flex-wrap: wrap;">
+                                <input type="text" id="new-department-input" class="input-field add-department-input" placeholder="e.g. Marketing" style="width: 140px;">
+                                <button type="button" id="btn-add-department" class="btn-action-indigo add-department-btn" title="Add Department">
                                     <i data-lucide="plus" style="width: 0.8rem; height: 0.8rem;"></i>
                                     <span>Add</span>
+                                </button>
+                                
+                                <select id="delete-department-select" class="select-field" style="width: 130px; font-size: 0.75rem; height: 32px; padding: 0 0.5rem; border-radius: 8px; background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); color: var(--text-primary);">
+                                    <option value="">-- Remove --</option>
+                                </select>
+                                <button type="button" id="btn-delete-department" class="btn-action-indigo add-department-btn" title="Delete Department" style="background: var(--clr-rose); border-color: var(--clr-rose); display: flex; align-items: center; gap: 0.25rem;">
+                                    <i data-lucide="trash-2" style="width: 0.8rem; height: 0.8rem;"></i>
+                                    <span>Del</span>
                                 </button>
                             </div>
                         </div>
@@ -734,11 +742,6 @@
                 <div>
                     <label class="form-label">Department Scope</label>
                     <select id="form-employee-dept" class="select-field">
-                        <option value="Engineering">Engineering</option>
-                        <option value="Product Strategy">Product Strategy</option>
-                        <option value="Infrastructure">Infrastructure</option>
-                        <option value="User Experience">User Experience</option>
-                        <option value="Operations">Operations</option>
                     </select>
                 </div>
 
