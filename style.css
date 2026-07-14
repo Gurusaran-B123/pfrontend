@@ -122,7 +122,9 @@ body {
 }
 
 .login-card {
-    background-color: var(--bg-dark-panel);
+    background:linear-gradient(360deg,
+#b3ffab48,
+#12fff744);
     border: 1px solid var(--border-color);
     width: 100%;
     max-width: 440px;
@@ -528,8 +530,10 @@ body {
 .smtp-interceptor-card {
     width: 100%;
     max-width: 420px;
-    background-color: #0f172a;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background:linear-gradient(360deg,#12fff73a,
+#b3ffab52
+);
+    border: 1px solid gray;
     border-radius: var(--border-radius-xl);
     padding: 1.75rem;
     box-shadow: var(--shadow-premium), inset 0 1px 1px rgba(255,255,255,0.05);
@@ -554,7 +558,7 @@ body {
 
 .smtp-icon-box {
     background: rgba(56, 189, 248, 0.1);
-    color: #38bdf8;
+    color:rgba(0, 0, 255, 0.637);
     width: 1.85rem;
     height: 1.85rem;
     border-radius: 6px;
@@ -567,7 +571,7 @@ body {
     font-family: var(--font-display);
     font-size: 0.75rem;
     font-weight: 700;
-    color: #e2e8f0;
+    color:black;
     letter-spacing: 0.05em;
 }
 
@@ -597,53 +601,54 @@ body {
 }
 
 .smtp-headers-block {
-    background: rgba(0, 0, 0, 0.25);
+    background: rgba(253, 247, 247, 0.774);
     border: 1px solid rgba(255, 255, 255, 0.04);
     border-radius: 8px;
     padding: 0.75rem;
     font-size: 0.7rem;
     line-height: 1.5;
+    color: black;
     margin-bottom: 0.85rem;
 }
 
 .header-lbl {
     font-family: var(--font-mono);
     font-weight: 700;
-    color: #64748b;
+    color:darkcyan;
     margin-right: 0.25rem;
 }
 
 .header-val {
-    color: #38bdf8;
+    color:darkblue;
     font-family: var(--font-mono);
     font-weight: 600;
 }
 
 .header-name-val {
-    color: #94a3b8;
+    color: darkblue;
     font-style: italic;
     margin-left: 0.25rem;
 }
 
 .header-val-from {
-    color: #94a3b8;
+    color:darkcyan;
     font-family: var(--font-mono);
 }
 
 .header-subject {
-    color: #f1f5f9;
+    color:darkcyan;
     font-weight: 600;
 }
 
 .smtp-body {
     flex-grow: 1;
     font-size: 0.75rem;
-    color: #94a3b8;
+    color:black;
     line-height: 1.5;
 }
 
 .smtp-passcode-display-box {
-    background: rgba(0, 0, 0, 0.35);
+    background: rgba(0, 0, 0, 0.048);
     border: 1px dashed rgba(255, 255, 255, 0.1);
     border-radius: 12px;
     padding: 1rem;
@@ -658,7 +663,7 @@ body {
     font-family: var(--font-mono);
     font-size: 2rem;
     font-weight: 800;
-    color: #38bdf8;
+    color:black;
     letter-spacing: 0.15em;
     text-shadow: 0 0 10px rgba(56, 189, 248, 0.2);
 }
@@ -670,14 +675,14 @@ body {
     font-size: 0.5rem;
     font-family: var(--font-mono);
     font-weight: 700;
-    color: rgba(255, 255, 255, 0.25);
+    color:darkcyan;
 }
 
 .smtp-copy-btn {
     width: 100%;
     background: rgba(255, 255, 255, 0.03);
     border: 1px solid rgba(255, 255, 255, 0.08);
-    color: #f1f5f9;
+    color:darkcyan;
     padding: 0.6rem;
     font-size: 0.7rem;
     font-weight: 600;
@@ -703,7 +708,7 @@ body {
     padding: 0.65rem 0.75rem;
     font-size: 0.6rem;
     line-height: 1.4;
-    color: #38bdf8;
+    color:darkblue;
     display: flex;
     align-items: flex-start;
     gap: 0.4rem;
@@ -738,7 +743,7 @@ body {
 }
 
 .logo-badge {
-    background-color: var(--clr-indigo);
+    background-color:black;
     color: #fff;
     width: 2.25rem;
     height: 2.25rem;
@@ -881,6 +886,7 @@ body {
     justify-content: space-between;
     align-items: center;
     gap: 1.5rem;
+    
 }
 
 .greeting-title {
@@ -953,9 +959,9 @@ body {
 }
 
 .stat-card {
-    background-color: var(--bg-dark-panel);
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius-lg);
+    background:linear-gradient(360deg,aqua,white);
+    border: 1px solid white;
+    border-radius:1px 10px 1px 10px;
     padding: 1.5rem;
     display: flex;
     justify-content: space-between;
@@ -1021,8 +1027,9 @@ body {
 
 /* Table panel wrapper containing grids or directories */
 .table-panel {
-    background-color: var(--bg-dark-panel);
-    border: 1px solid var(--border-color);
+    background-color:white;
+    border:5px groove whitesmoke;
+    
     border-radius: var(--border-radius-lg);
     box-shadow: var(--shadow-premium);
     overflow: hidden;
@@ -1318,6 +1325,7 @@ body {
     width: 100%;
     border-collapse: collapse;
     text-align: left;
+    background:linear-gradient(60deg,rgba(0, 0, 0, 0.123),rgba(255, 255, 255, 0.192))
 }
 
 .custom-table th {
@@ -1446,7 +1454,7 @@ body {
 
 /* Discussions Log Filter and Stack */
 .discussions-filters-panel {
-    background-color: var(--bg-dark-panel);
+    background:linear-gradient(60deg,rgba(0, 0, 0, 0.123),rgba(255, 255, 255, 0.192));
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius-lg);
     padding: 1rem 1.5rem;
@@ -2298,8 +2306,8 @@ select {
 
 /* --- Dashboard: recent discussion timeline mini-cards --- */
 .timeline-mini-card {
-    background-color: rgba(0, 0, 0, 0.01);
-    border: 1px solid var(--border-color);
+    background-color:whitesmoke;
+    border: 1px solid gray;
     border-radius: 10px;
     padding: 0.75rem 1rem;
     transition: var(--transition-smooth);
